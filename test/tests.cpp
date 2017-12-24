@@ -1,6 +1,37 @@
 #include <lift.hpp>
 #include <catch.hpp>
 
+TEST_CASE("compose")
+{
+  auto to_string = [](auto t) { return std::to_string(t);};
+  WHEN("called with several functions")
+  {
+    THEN("they are chained last to first")
+    {
+      auto string_plus_one_twice = lift::compose(to_string,
+                                                 [](int i) { return i + i; },
+                                                 [](int i) { return i + 1; });
+      REQUIRE(string_plus_one_twice(2) == "6");
+    }
+    AND_THEN("last can be multi parameter function")
+    {
+      auto string_add = lift::compose(to_string,
+                                      [](int x, int y) { return x + y;});
+      REQUIRE(string_add(3,2) == "5");
+    }
+  }
+  WHEN("functions are non-copyable")
+  {
+    THEN("thay are moved")
+    {
+      auto f1 = [x = std::make_unique<int>(3)](int p) mutable { *x += p; return std::move(x);};
+      auto f2 = [y = std::make_unique<std::string>("foo")](auto p) { return *y + std::to_string(*p);};
+      auto func=lift::compose(std::move(f2), std::move(f1));
+      REQUIRE(func(5) == "foo8");
+    }
+  }
+}
+
 TEST_CASE("negate logically inverts the return value of its function")
 {
   auto is_three = [](int n) { return n == 3; };
@@ -56,6 +87,14 @@ TEST_CASE("when_all")
       REQUIRE(num == 2);
     }
   }
+  WHEN("a predicate is not copyable")
+  {
+    THEN("it is moved")
+    {
+      auto pred = lift::when_all([x = std::make_unique<int>(3)](auto& p) { return p == x;});
+      REQUIRE_FALSE(pred(nullptr));
+    }
+  }
 }
 
 TEST_CASE("when_any")
@@ -99,6 +138,14 @@ TEST_CASE("when_any")
       REQUIRE(num == 2);
     }
   }
+  WHEN("a predicate is not copyable")
+  {
+    THEN("it is moved")
+    {
+      auto pred = lift::when_any([x = std::make_unique<int>(3)](auto& p) { return p == x;});
+      REQUIRE_FALSE(pred(nullptr));
+    }
+  }
 }
 
 TEST_CASE("when_none")
@@ -140,6 +187,14 @@ TEST_CASE("when_none")
                                     [&](int i) { return ++num > i;},
                                     [&](int i) { return ++num > i;})(1));
       REQUIRE(num == 2);
+    }
+  }
+  WHEN("a predicate is not copyable")
+  {
+    THEN("it is moved")
+    {
+      auto pred = lift::when_none([x = std::make_unique<int>(3)](auto& p) { return p == x;});
+      REQUIRE(pred(nullptr));
     }
   }
 }
@@ -202,31 +257,34 @@ TEST_CASE("if_then_else")
   }
 }
 
-TEST_CASE("do_all calls each function in sequence")
+TEST_CASE("do_all")
 {
-  int num = 0;
-  lift::do_all([&](int i){ num += i; REQUIRE(num == 1);},
-               [&](int i){ num += i; REQUIRE(num == 2);},
-               [&](int i){ num += i; REQUIRE(num == 3);})(1);
-}
-
-TEST_CASE("compose")
-{
-  auto to_string = [](auto t) { return std::to_string(t);};
-  WHEN("called with several functions")
-  {
-    THEN("they are chained last to first")
-    {
-      auto string_plus_one_twice = lift::compose(to_string,
-                                                 [](int i) { return i + i; },
-                                                 [](int i) { return i + 1; });
-      REQUIRE(string_plus_one_twice(2) == "6");
+  WHEN("there are several functions") {
+    THEN("they are called in sequence") {
+      int num = 0;
+      lift::do_all([&](int i) {
+                     num += i;
+                     REQUIRE(num == 1);
+                   },
+                   [&](int i) {
+                     num += i;
+                     REQUIRE(num == 2);
+                   },
+                   [&](int i) {
+                     num += i;
+                     REQUIRE(num == 3);
+                   })(1);
+      REQUIRE(num == 3);
     }
-    AND_THEN("last can be multi parameter function")
+  }
+  WHEN("functions are non copyable")
+  {
+    THEN("they are moved")
     {
-      auto string_add = lift::compose(to_string,
-                                      [](int x, int y) { return x + y;});
-      REQUIRE(string_add(3,2) == "5");
+      int n = 0;
+      lift::do_all([x=std::make_unique<int>(3),&n](auto p) { n=p+*x;})(5);
+      REQUIRE(n == 8);
     }
   }
 }
+
