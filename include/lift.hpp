@@ -3,10 +3,17 @@
 
 #include <utility>
 
+#define LIFT_THRICE(...)                \
+        noexcept(noexcept(__VA_ARGS__)) \
+        -> decltype(__VA_ARGS__)        \
+        {                               \
+          return __VA_ARGS__;           \
+        }
+
 namespace lift {
 
 template <typename F, typename ... Fs>
-inline auto compose(F f, Fs... fs)
+inline auto compose(F&& f, Fs&&... fs)
 {
   if constexpr (sizeof...(fs) == 0)
   {
@@ -14,9 +21,10 @@ inline auto compose(F f, Fs... fs)
   }
   else
   {
-    auto tail = compose(std::move(fs)...);
-    return [f = std::move(f), tail = std::move(tail)]
+    return [f = std::forward<F>(f), tail = compose(std::forward<Fs>(fs)...)]
       (auto&& ... obj)
+    noexcept(noexcept(f(compose(std::forward<Fs>(fs)...)(std::forward<decltype(obj)>(obj)...))))
+    -> decltype(f(compose(std::forward<Fs>(fs)...)(std::forward<decltype(obj)>(obj)...)))
     {
       return f(tail(std::forward<decltype(obj)>(obj)...));
     };
@@ -24,54 +32,52 @@ inline auto compose(F f, Fs... fs)
 }
 
 template <typename F>
-inline auto negate(F f)
+inline auto negate(F&& f)
 {
-  return [f = std::move(f)](auto&& ... obj)
-  {
-    return !(f(std::forward<decltype(obj)>(obj)...));
-  };
+  return [f = std::forward<F>(f)](auto&& ... obj)
+         LIFT_THRICE(!f(std::forward<decltype(obj)>(obj)...));
 }
 
 template <typename T>
-inline auto equals(T t)
+inline auto equals(T&& t)
 {
-  return [t = std::move(t)](const auto& obj) { return obj == t; };
+  return [t = std::forward<T>(t)](const auto& obj) LIFT_THRICE(obj == t);
 }
 
 template <typename T>
-inline auto less_than(T t)
+inline auto less_than(T&& t)
 {
-  return [t = std::move(t)](const auto& obj) { return obj < t; };
+  return [t = std::forward<T>(t)](const auto& obj) LIFT_THRICE(obj < t);
 }
 
 template <typename T>
-inline auto less_equal(T t)
+inline auto less_equal(T&& t)
 {
-  return [t = std::move(t)](const auto& obj) { return obj <= t; };
+  return [t = std::forward<T>(t)](const auto& obj) LIFT_THRICE(obj <= t);
 }
 
 template <typename T>
-inline auto greater_than(T t)
+inline auto greater_than(T&& t)
 {
-  return [t = std::move(t)](const auto& obj) { return obj > t; };
+  return [t = std::forward<T>(t)](const auto& obj) LIFT_THRICE(obj > t);
 }
 
 template <typename T>
-inline auto greater_equal(T t)
+inline auto greater_equal(T&& t)
 {
-  return [t = std::move(t)](const auto& obj) { return obj >= t; };
+  return [t = std::forward<T>(t)](const auto& obj) LIFT_THRICE(obj >= t);
 }
 
 template <typename ... Fs>
 inline auto when_all(Fs... fs)
 {
-  return [=](const auto& ... obj) { return (fs(obj...) && ...);};
+  return [=](const auto& ... obj) LIFT_THRICE((fs(obj...) && ...));
 }
 
 template <typename ... Fs>
 inline auto when_any(Fs ... fs)
 {
-  return [=](const auto& ... obj) { return (fs(obj...) || ...);};
+  return [=](const auto& ... obj) LIFT_THRICE((fs(obj...) || ...));
 }
 
 template <typename ... Fs>
@@ -81,10 +87,15 @@ inline auto when_none(Fs ... fs)
 }
 
 template <typename Predicate, typename Action>
-inline auto if_then(Predicate predicate, Action action)
+inline auto if_then(Predicate&& predicate, Action&& action)
 {
-  return [predicate = std::move(predicate), action = std::move(action)]
+  return [
+    predicate = std::forward<Predicate>(predicate),
+    action = std::forward<Action>(action)]
     (auto&& ... obj)
+    noexcept(noexcept(true == predicate(obj...))
+             && noexcept(action(std::forward<decltype(obj)>(obj)...)))
+    -> void
   {
     if (predicate(obj...))
     {
@@ -94,15 +105,18 @@ inline auto if_then(Predicate predicate, Action action)
 }
 
 template <typename Predicate, typename TAction, typename FAction>
-inline auto if_then_else(Predicate predicate,
-                         TAction t_action,
-                         FAction f_action)
+inline auto if_then_else(Predicate&& predicate,
+                         TAction&& t_action,
+                         FAction&& f_action)
 {
   return [
-    predicate = std::move(predicate),
-    t_action = std::move(t_action),
-    f_action = std::move(f_action)
+    predicate = std::forward<Predicate>(predicate),
+    t_action = std::forward<TAction>(t_action),
+    f_action = std::forward<FAction>(f_action)
   ](auto&& ... obj)
+  noexcept(noexcept(true == predicate(obj...))
+           && noexcept(t_action(std::forward<decltype(obj)>(obj)...))
+           && noexcept(t_action(std::forward<decltype(obj)>(obj)...)))
   {
     if (predicate(obj...))
     {
@@ -119,6 +133,7 @@ template <typename ... Fs>
 inline auto do_all(Fs ... fs)
 {
   return [=](auto&& ... obj)
+  noexcept(noexcept(((void)(fs(std::forward<decltype(obj)>(obj)...)),...)))
   {
     ((void)(fs(std::forward<decltype(obj)>(obj)...)),...);
   };
