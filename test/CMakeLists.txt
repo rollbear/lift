@@ -27,6 +27,6 @@ if(NOT EXISTS ${CATCH_DIR}/catch.hpp)
     endif()
 endif()
 
-add_executable(self_test tests.cpp main.cpp)
+add_executable(self_test tests.cpp main.cpp ../include/lift.hpp)
 target_link_libraries(self_test lift)
 target_include_directories(self_test PRIVATE ${CATCH_DIR})
