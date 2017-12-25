@@ -66,7 +66,7 @@ template <typename F>
 inline auto negate(F&& f)
 {
   return [f = std::forward<F>(f)](auto&& ... obj) mutable
-         LIFT_THRICE(!f(std::forward<decltype(obj)>(obj)...));
+         LIFT_THRICE(!f(LIFT_FWD(obj)...));
 }
 
 template <typename T>
@@ -116,7 +116,7 @@ inline auto when_all(Fs&&... fs)
     noexcept(noexcept((std::forward<Fs>(fs)(obj...) && ...)))
   -> bool
   {
-    return detail::when_all(funcs, std::index_sequence_for<Fs...>{}, std::forward<decltype(obj)>(obj)...);
+    return detail::when_all(funcs, std::index_sequence_for<Fs...>{}, LIFT_FWD(obj)...);
   };
 }
 
@@ -136,7 +136,7 @@ inline auto when_any(Fs&& ... fs)
     noexcept(noexcept((std::forward<Fs>(fs)(obj...) || ...)))
   -> bool
   {
-    return detail::when_any(funcs, std::index_sequence_for<Fs...>{}, std::forward<decltype(obj)>(obj)...);
+    return detail::when_any(funcs, std::index_sequence_for<Fs...>{}, LIFT_FWD(obj)...);
   };
 }
 
@@ -155,12 +155,12 @@ inline auto if_then(Predicate&& predicate, Action&& action)
     (auto&& ... obj)
   mutable
     noexcept(noexcept(true == predicate(obj...))
-             && noexcept(action(std::forward<decltype(obj)>(obj)...)))
+             && noexcept(action(LIFT_FWD(obj)...)))
     -> void
   {
     if (predicate(obj...))
     {
-      action(std::forward<decltype(obj)>(obj)...);
+      action(LIFT_FWD(obj)...);
     }
   };
 }
@@ -177,16 +177,16 @@ inline auto if_then_else(Predicate&& predicate,
   ](auto&& ... obj)
   mutable
   noexcept(noexcept(true == predicate(obj...))
-           && noexcept(t_action(std::forward<decltype(obj)>(obj)...))
-           && noexcept(t_action(std::forward<decltype(obj)>(obj)...)))
+           && noexcept(t_action(LIFT_FWD(obj)...))
+           && noexcept(t_action(LIFT_FWD(obj)...)))
   {
     if (predicate(obj...))
     {
-      t_action(std::forward<decltype(obj)>(obj)...);
+      t_action(LIFT_FWD(obj)...);
     }
     else
     {
-      f_action(std::forward<decltype(obj)>(obj)...);
+      f_action(LIFT_FWD(obj)...);
     }
   };
 }
@@ -206,10 +206,10 @@ inline auto do_all(Fs ... fs)
 {
   return [funcs = std::tuple(std::forward<Fs>(fs)...)](const auto& ... obj)
     mutable
-    noexcept(noexcept(((void)(std::forward<Fs>(fs)(obj...)), ...)))
+    noexcept(noexcept(((void)(LIFT_FWD(obj)), ...)))
   -> void
   {
-    detail::do_all(funcs, std::index_sequence_for<Fs...>{}, std::forward<decltype(obj)>(obj)...);
+    detail::do_all(funcs, std::index_sequence_for<Fs...>{}, LIFT_FWD(obj)...);
   };
 }
 
