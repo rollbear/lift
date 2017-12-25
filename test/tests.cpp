@@ -4,25 +4,33 @@
 TEST_CASE("compose")
 {
   auto to_string = [](auto t) { return std::to_string(t);};
-  WHEN("called with several functions")
-  {
-    THEN("they are chained last to first")
-    {
+  WHEN("called with several unary functions") {
+    THEN("they are chained last to first") {
       auto string_plus_one_twice = lift::compose(to_string,
                                                  [](int i) { return i + i; },
                                                  [](int i) { return i + 1; });
       REQUIRE(string_plus_one_twice(2) == "6");
     }
-    AND_THEN("last can be multi parameter function")
-    {
+  }
+  AND_WHEN("called with a unary and a binary function") {
+    THEN("the composition is binary, calling the last with two values and the first with the result") {
       auto string_add = lift::compose(to_string,
-                                      [](int x, int y) { return x + y;});
-      REQUIRE(string_add(3,2) == "5");
+                                      [](int x, int y) { return x + y; });
+      REQUIRE(string_add(3, 2) == "5");
     }
   }
-  WHEN("functions are non-copyable")
+  AND_WHEN("called with a binary and a unary function")
   {
-    THEN("thay are moved")
+    THEN("the composition is binary, calling the last with each value, and the first with the two results")
+    {
+      auto cmp = lift::compose(std::less<>{},
+                               [](const auto& x) { return x.first;});
+      REQUIRE(cmp(std::pair(1,3), std::pair(3,1)));
+    }
+  }
+  AND_WHEN("functions are non-copyable")
+  {
+    THEN("they are moved")
     {
       auto f1 = [x = std::make_unique<int>(3)](int p) mutable { *x += p; return std::move(x);};
       auto f2 = [y = std::make_unique<std::string>("foo")](auto p) { return *y + std::to_string(*p);};
