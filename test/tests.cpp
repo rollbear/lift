@@ -54,6 +54,41 @@ TEST_CASE("equals")
   REQUIRE(lift::equals(std::unique_ptr<int>())(nullptr));
 }
 
+TEST_CASE("not_equal")
+{
+  int* p = new int{3};
+  REQUIRE(lift::not_equal(std::unique_ptr<int>(p))(std::unique_ptr<int>()));
+  REQUIRE_FALSE(lift::not_equal(std::unique_ptr<int>())(nullptr));
+
+}
+TEST_CASE("less_than")
+{
+  REQUIRE_FALSE(lift::less_than(3)(3));
+  REQUIRE(lift::less_than(3)(2));
+  REQUIRE_FALSE(lift::less_than(3)(4));
+}
+
+TEST_CASE("less_equal")
+{
+  REQUIRE(lift::less_equal(3)(3));
+  REQUIRE(lift::less_equal(3)(2));
+  REQUIRE_FALSE(lift::less_equal(3)(4));
+}
+
+TEST_CASE("greater_than")
+{
+  REQUIRE_FALSE(lift::greater_than(3)(3));
+  REQUIRE_FALSE(lift::greater_than(3)(2));
+  REQUIRE(lift::greater_than(3)(4));
+}
+
+TEST_CASE("greater_equal")
+{
+  REQUIRE(lift::greater_equal(3)(3));
+  REQUIRE_FALSE(lift::greater_equal(3)(2));
+  REQUIRE(lift::greater_equal(3)(4));
+}
+
 TEST_CASE("when_all")
 {
   WHEN("all predicates are true")

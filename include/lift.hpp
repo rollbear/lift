@@ -76,6 +76,12 @@ inline auto equals(T&& t)
 }
 
 template <typename T>
+inline auto not_equal(T&& t)
+{
+  return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj != t);
+}
+
+template <typename T>
 inline auto less_than(T&& t)
 {
   return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj < t);
