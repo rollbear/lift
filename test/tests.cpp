@@ -68,7 +68,7 @@ TEST_CASE("when_all")
       REQUIRE(num == 3);
     }
   }
-  WHEN("some predicates are false")
+  AND_WHEN("some predicates are false")
   {
     THEN("if first is false it's the only one tested")
     {
@@ -78,7 +78,7 @@ TEST_CASE("when_all")
                                    [&](int i) { return ++num == i;})(0));
       REQUIRE(num == 1);
     }
-    THEN("if all but last are true, all are tested")
+    AND_THEN("if all but last are true, all are tested")
     {
       int num = 0;
       REQUIRE_FALSE(lift::when_all([&](int i) { return ++num < i;},
@@ -86,7 +86,7 @@ TEST_CASE("when_all")
                                    [&](int i) { return ++num < i;})(3));
       REQUIRE(num == 3);
     }
-    THEN("if first is the only true one, the two first are tested")
+    AND_THEN("if first is the only true one, the two first are tested")
     {
       int num = 0;
       REQUIRE_FALSE(lift::when_all([&](int i) { return ++num == i;},
@@ -95,7 +95,7 @@ TEST_CASE("when_all")
       REQUIRE(num == 2);
     }
   }
-  WHEN("a predicate is not copyable")
+  AND_WHEN("a predicate is not copyable")
   {
     THEN("it is moved")
     {
@@ -119,7 +119,7 @@ TEST_CASE("when_any")
       REQUIRE(num == 3);
     }
   }
-  WHEN("some predicates are true")
+  AND_WHEN("some predicates are true")
   {
     THEN("if first is true it's the only one tested")
     {
@@ -129,7 +129,7 @@ TEST_CASE("when_any")
                              [&](int i) { return ++num == i;})(1));
       REQUIRE(num == 1);
     }
-    THEN("if all but last are false, all are tested")
+    AND_THEN("if all but last are false, all are tested")
     {
       int num = 0;
       REQUIRE(lift::when_any([&](int i) { return ++num == i;},
@@ -137,7 +137,7 @@ TEST_CASE("when_any")
                              [&](int i) { return ++num == i;})(3));
       REQUIRE(num == 3);
     }
-    THEN("if first is the only false one, the two first are tested")
+    AND_THEN("if first is the only false one, the two first are tested")
     {
       int num = 0;
       REQUIRE(lift::when_any([&](int i) { return ++num == i;},
@@ -146,7 +146,7 @@ TEST_CASE("when_any")
       REQUIRE(num == 2);
     }
   }
-  WHEN("a predicate is not copyable")
+  AND_WHEN("a predicate is not copyable")
   {
     THEN("it is moved")
     {
@@ -170,7 +170,7 @@ TEST_CASE("when_none")
       REQUIRE(num == 3);
     }
   }
-  WHEN("some predicates are true")
+  AND_WHEN("some predicates are true")
   {
     THEN("if first is true it's the only one tested")
     {
@@ -180,7 +180,7 @@ TEST_CASE("when_none")
                                     [&](int i) { return ++num == i;})(1));
       REQUIRE(num == 1);
     }
-    THEN("if all but last are false, all are tested")
+    AND_THEN("if all but last are false, all are tested")
     {
       int num = 0;
       REQUIRE_FALSE(lift::when_none([&](int i) { return ++num == i;},
@@ -188,7 +188,7 @@ TEST_CASE("when_none")
                                     [&](int i) { return ++num == i;})(3));
       REQUIRE(num == 3);
     }
-    THEN("if first is the only false one, the two first are tested")
+    AND_THEN("if first is the only false one, the two first are tested")
     {
       int num = 0;
       REQUIRE_FALSE(lift::when_none([&](int i) { return ++num > i;},
@@ -197,7 +197,7 @@ TEST_CASE("when_none")
       REQUIRE(num == 2);
     }
   }
-  WHEN("a predicate is not copyable")
+  AND_WHEN("a predicate is not copyable")
   {
     THEN("it is moved")
     {
@@ -226,7 +226,7 @@ TEST_CASE("if_then")
       REQUIRE(num == 5);
     }
   }
-  WHEN("predicate is false")
+  AND_WHEN("predicate is false")
   {
     THEN("action is not called")
     {
@@ -254,7 +254,7 @@ TEST_CASE("if_then_else")
       REQUIRE(fnum == 0);
     }
   }
-  WHEN("predicate is false")
+  AND_WHEN("predicate is false")
   {
     THEN("action is not called")
     {
@@ -267,8 +267,10 @@ TEST_CASE("if_then_else")
 
 TEST_CASE("do_all")
 {
-  WHEN("there are several functions") {
-    THEN("they are called in sequence") {
+  WHEN("there are several functions")
+  {
+    THEN("they are called in sequence")
+    {
       int num = 0;
       lift::do_all([&](int i) {
                      num += i;
@@ -285,7 +287,7 @@ TEST_CASE("do_all")
       REQUIRE(num == 3);
     }
   }
-  WHEN("functions are non copyable")
+  AND_WHEN("functions are non copyable")
   {
     THEN("they are moved")
     {
