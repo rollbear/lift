@@ -15,11 +15,6 @@
 
 namespace lift {
 
-namespace detail {
-  template <typename ... T>
-  using first_type = std::tuple_element_t<0, std::tuple<T...>>;
-}
-
 template <typename F, typename ... Fs>
 inline auto compose(F&& f, Fs&&... fs)
 {
@@ -30,28 +25,29 @@ inline auto compose(F&& f, Fs&&... fs)
   else
   {
     return [f = std::forward<F>(f), tail = compose(std::forward<Fs>(fs)...)]
-      (auto&& ... obj)
+      (auto&& ... objs)
     mutable
     {
       using tailtype = decltype(tail);
-      constexpr bool multitail = std::is_invocable_v<tailtype, detail::first_type<decltype(obj)...>>;
-      constexpr bool unitail = std::is_invocable_v<tailtype, decltype(obj)...>;
+      constexpr bool multitail = (std::is_invocable_v<tailtype, decltype(objs)> && ...);
+      constexpr bool unitail = std::is_invocable_v<tailtype, decltype(objs)...>;
+      static_assert(sizeof...(objs) == 1 || !(multitail && unitail), "ambigous composition");
       if constexpr (unitail)
       {
-        constexpr bool handled = std::is_invocable_v<F, decltype(tail(LIFT_FWD(obj)...))>;
+        constexpr bool handled = std::is_invocable_v<F, decltype(tail(LIFT_FWD(objs)...))>;
         static_assert(handled, "can't compose");
         if constexpr (handled)
         {
-          return f(tail(LIFT_FWD(obj)...));
+          return f(tail(LIFT_FWD(objs)...));
         }
       }
       else if constexpr(multitail)
       {
-        constexpr bool handled = std::is_invocable_v<F, decltype(tail(LIFT_FWD(obj)))...>;
+        constexpr bool handled = std::is_invocable_v<F, decltype(tail(LIFT_FWD(objs)))...>;
         static_assert(handled, "can't compose");
         if constexpr (handled)
         {
-          return f(tail(LIFT_FWD(obj))...);
+          return f(tail(LIFT_FWD(objs))...);
         }
       }
       else
