@@ -1,6 +1,31 @@
 #include <lift.hpp>
 #include <catch.hpp>
 
+// constexpr tests
+static_assert(lift::equals(3)(3), "equals is constexpr");
+static_assert(lift::not_equal(3)(1), "not_equal is constexpr");
+static_assert(lift::less_than(3)(2), "less_than is constexpr");
+static_assert(lift::less_equal(3)(2), "less_equal is constexpr");
+static_assert(lift::greater_than(3)(4), "greater_than is constexpr");
+static_assert(lift::greater_equal(3)(4), "greater_equal is constexpr");
+static_assert(lift::negate(lift::equals(3))(2), "negate is constexpr");
+static_assert(lift::when_all(lift::equals(3),
+                             lift::not_equal(4))(3),
+              "when_all is constexpr");
+static_assert(lift::when_any(lift::equals(3),
+                             lift::equals(4))(4),
+              "when_any is constexpr");
+static_assert(lift::when_none(lift::equals(3),
+                              lift::equals(4))(5),
+              "when_none is constexpr");
+static_assert(lift::if_then_else(lift::greater_than(3),
+                                 lift::equals(4),
+                                 lift::equals(5))(4),
+              "if_then_else is constexpr");
+static_assert(lift::compose(lift::greater_than(2),
+                            std::plus<>{})(1,2),
+              "compose is constexpr");
+
 TEST_CASE("compose")
 {
   auto to_string = [](auto t) { return std::to_string(t);};

@@ -16,7 +16,7 @@
 namespace lift {
 
 template <typename F, typename ... Fs>
-inline auto compose(F&& f, Fs&&... fs)
+inline constexpr auto compose(F&& f, Fs&&... fs)
 {
   if constexpr (sizeof...(fs) == 0)
   {
@@ -59,44 +59,44 @@ inline auto compose(F&& f, Fs&&... fs)
 }
 
 template <typename F>
-inline auto negate(F&& f)
+inline constexpr auto negate(F&& f)
 {
   return [f = std::forward<F>(f)](auto&& ... obj) mutable
          LIFT_THRICE(!f(LIFT_FWD(obj)...));
 }
 
 template <typename T>
-inline auto equals(T&& t)
+inline constexpr auto equals(T&& t)
 {
   return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj == t);
 }
 
 template <typename T>
-inline auto not_equal(T&& t)
+inline constexpr auto not_equal(T&& t)
 {
   return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj != t);
 }
 
 template <typename T>
-inline auto less_than(T&& t)
+inline constexpr auto less_than(T&& t)
 {
   return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj < t);
 }
 
 template <typename T>
-inline auto less_equal(T&& t)
+inline constexpr auto less_equal(T&& t)
 {
   return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj <= t);
 }
 
 template <typename T>
-inline auto greater_than(T&& t)
+inline constexpr auto greater_than(T&& t)
 {
   return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj > t);
 }
 
 template <typename T>
-inline auto greater_equal(T&& t)
+inline auto constexpr greater_equal(T&& t)
 {
   return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj >= t);
 }
@@ -104,7 +104,7 @@ inline auto greater_equal(T&& t)
 namespace detail
 {
   template <typename Fs, std::size_t ... I, typename ... T>
-  inline bool when_all(Fs& fs, std::index_sequence <I...>, T&& ... t)
+  inline constexpr bool when_all(Fs& fs, std::index_sequence <I...>, T&& ... t)
   noexcept(noexcept((std::get<I>(fs)(std::forward<T>(t)...) && ...)))
   {
     return (std::get<I>(fs)(std::forward<T>(t)...) && ...);
@@ -112,7 +112,7 @@ namespace detail
 }
 
 template <typename ... Fs>
-inline auto when_all(Fs&&... fs)
+inline constexpr auto when_all(Fs&&... fs)
 {
   return [funcs = std::tuple(std::forward<Fs>(fs)...)](const auto& ... obj)
     mutable
@@ -126,14 +126,14 @@ inline auto when_all(Fs&&... fs)
 namespace detail
 {
   template <typename Fs, std::size_t ... I, typename ... T>
-  inline bool when_any(Fs& fs, std::index_sequence<I...>, T&& ... t)
+  inline constexpr bool when_any(Fs& fs, std::index_sequence<I...>, T&& ... t)
   noexcept(noexcept((std::get<I>(fs)(std::forward<T>(t)...) || ...)))
   {
     return (std::get<I>(fs)(std::forward<T>(t)...) || ...);
   }
 }
 template <typename ... Fs>
-inline auto when_any(Fs&& ... fs)
+inline constexpr auto when_any(Fs&& ... fs)
 {
   return [funcs = std::tuple(std::forward<Fs>(fs)...)](const auto& ... obj)
     mutable
@@ -145,13 +145,13 @@ inline auto when_any(Fs&& ... fs)
 }
 
 template <typename ... Fs>
-inline auto when_none(Fs ... fs)
+inline constexpr auto when_none(Fs ... fs)
 {
   return negate(when_any(std::move(fs)...));
 }
 
 template <typename Predicate, typename Action>
-inline auto if_then(Predicate&& predicate, Action&& action)
+inline constexpr auto if_then(Predicate&& predicate, Action&& action)
 {
   return [
     predicate = std::forward<Predicate>(predicate),
@@ -170,7 +170,7 @@ inline auto if_then(Predicate&& predicate, Action&& action)
 }
 
 template <typename Predicate, typename TAction, typename FAction>
-inline auto if_then_else(Predicate&& predicate,
+inline constexpr auto if_then_else(Predicate&& predicate,
                          TAction&& t_action,
                          FAction&& f_action)
 {
@@ -186,11 +186,11 @@ inline auto if_then_else(Predicate&& predicate,
   {
     if (predicate(obj...))
     {
-      t_action(LIFT_FWD(obj)...);
+      return t_action(LIFT_FWD(obj)...);
     }
     else
     {
-      f_action(LIFT_FWD(obj)...);
+      return f_action(LIFT_FWD(obj)...);
     }
   };
 }
@@ -198,7 +198,7 @@ inline auto if_then_else(Predicate&& predicate,
 namespace detail
 {
 template <typename Fs, std::size_t ... I, typename ... T>
-inline void do_all(Fs& fs, std::index_sequence<I...>, T&& ... t)
+inline constexpr void do_all(Fs& fs, std::index_sequence<I...>, T&& ... t)
 {
    ((void)(std::get<I>(fs)(std::forward<T>(t)...)),  ...);
 }
@@ -206,7 +206,7 @@ inline void do_all(Fs& fs, std::index_sequence<I...>, T&& ... t)
 
 
 template <typename ... Fs>
-inline auto do_all(Fs ... fs)
+inline constexpr auto do_all(Fs ... fs)
 {
   return [funcs = std::tuple(std::forward<Fs>(fs)...)](const auto& ... obj)
     mutable
