@@ -109,8 +109,9 @@ namespace detail
 {
   template <typename Fs, std::size_t ... I, typename ... T>
   inline bool when_all(Fs& fs, std::index_sequence <I...>, T&& ... t)
+  noexcept(noexcept((std::get<I>(fs)(std::forward<T>(t)...) && ...)))
   {
-    return ((std::get<I>(fs)(std::forward<T>(t)...)) && ...);
+    return (std::get<I>(fs)(std::forward<T>(t)...) && ...);
   }
 }
 
@@ -130,6 +131,7 @@ namespace detail
 {
   template <typename Fs, std::size_t ... I, typename ... T>
   inline bool when_any(Fs& fs, std::index_sequence<I...>, T&& ... t)
+  noexcept(noexcept((std::get<I>(fs)(std::forward<T>(t)...) || ...)))
   {
     return (std::get<I>(fs)(std::forward<T>(t)...) || ...);
   }
