@@ -352,6 +352,21 @@ TEST_CASE("if_then_else")
       REQUIRE(fnum == 4);
     }
   }
+  AND_WHEN("actions have return values")
+  {
+    THEN("the returned type is the common type")
+    {
+      auto op = lift::if_then_else(lift::less_than(0),
+      [](auto) { return 0U;},
+      [](auto x) { return x;});
+      auto p1 = op(-1);
+      static_assert(std::is_same<decltype(p1), std::common_type_t<int, unsigned>>{});
+      REQUIRE(p1 == 0U);
+      auto p2 = op(1);
+      static_assert(std::is_same<decltype(p2), std::common_type_t<int, unsigned>>{});
+      REQUIRE(p2 == 1U);
+    }
+  }
 }
 
 TEST_CASE("do_all")

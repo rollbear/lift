@@ -278,7 +278,11 @@ if_then_else(
     noexcept(
     noexcept(true == predicate(obj...))
     && noexcept(t_action(LIFT_FWD(obj)...))
-    && noexcept(t_action(LIFT_FWD(obj)...)))
+    && noexcept(f_action(LIFT_FWD(obj)...)))
+  -> std::common_type_t<
+      decltype(t_action(LIFT_FWD(obj)...)),
+      decltype(f_action(LIFT_FWD(obj)...))
+    >
   {
     if (predicate(obj...))
     {
