@@ -26,7 +26,6 @@ inline constexpr auto compose(F&& f, Fs&&... fs)
   {
     return [f = std::forward<F>(f), tail = compose(std::forward<Fs>(fs)...)]
       (auto&& ... objs)
-    mutable
     {
       using tailtype = decltype(tail);
       constexpr bool multitail = (std::is_invocable_v<tailtype, decltype(objs)> && ...);
@@ -61,44 +60,44 @@ inline constexpr auto compose(F&& f, Fs&&... fs)
 template <typename F>
 inline constexpr auto negate(F&& f)
 {
-  return [f = std::forward<F>(f)](auto&& ... obj) mutable
+  return [f = std::forward<F>(f)](auto&& ... obj)
          LIFT_THRICE(!f(LIFT_FWD(obj)...));
 }
 
 template <typename T>
 inline constexpr auto equals(T&& t)
 {
-  return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj == t);
+  return [t = std::forward<T>(t)](const auto& obj)  LIFT_THRICE(obj == t);
 }
 
 template <typename T>
 inline constexpr auto not_equal(T&& t)
 {
-  return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj != t);
+  return [t = std::forward<T>(t)](const auto& obj)  LIFT_THRICE(obj != t);
 }
 
 template <typename T>
 inline constexpr auto less_than(T&& t)
 {
-  return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj < t);
+  return [t = std::forward<T>(t)](const auto& obj)  LIFT_THRICE(obj < t);
 }
 
 template <typename T>
 inline constexpr auto less_equal(T&& t)
 {
-  return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj <= t);
+  return [t = std::forward<T>(t)](const auto& obj)  LIFT_THRICE(obj <= t);
 }
 
 template <typename T>
 inline constexpr auto greater_than(T&& t)
 {
-  return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj > t);
+  return [t = std::forward<T>(t)](const auto& obj)  LIFT_THRICE(obj > t);
 }
 
 template <typename T>
 inline auto constexpr greater_equal(T&& t)
 {
-  return [t = std::forward<T>(t)](const auto& obj) mutable LIFT_THRICE(obj >= t);
+  return [t = std::forward<T>(t)](const auto& obj)  LIFT_THRICE(obj >= t);
 }
 
 namespace detail
@@ -115,7 +114,6 @@ template <typename ... Fs>
 inline constexpr auto when_all(Fs&&... fs)
 {
   return [funcs = std::tuple(std::forward<Fs>(fs)...)](const auto& ... obj)
-    mutable
     noexcept(noexcept((std::forward<Fs>(fs)(obj...) && ...)))
   -> bool
   {
@@ -136,7 +134,6 @@ template <typename ... Fs>
 inline constexpr auto when_any(Fs&& ... fs)
 {
   return [funcs = std::tuple(std::forward<Fs>(fs)...)](const auto& ... obj)
-    mutable
     noexcept(noexcept((std::forward<Fs>(fs)(obj...) || ...)))
   -> bool
   {

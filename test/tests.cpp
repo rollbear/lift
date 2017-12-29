@@ -2,27 +2,35 @@
 #include <catch.hpp>
 
 // constexpr tests
-static_assert(lift::equals(3)(3), "equals is constexpr");
-static_assert(lift::not_equal(3)(1), "not_equal is constexpr");
+
+template <auto N>
+constexpr auto eq = lift::equals(N);
+
+template <auto N>
+constexpr auto gt = lift::greater_than(N);
+
+template <auto N>
+constexpr auto ne = lift::not_equal(N);
+
+static_assert(eq<3>(3), "equals is constexpr");
+static_assert(ne<3>(1), "not_equal is constexpr");
 static_assert(lift::less_than(3)(2), "less_than is constexpr");
 static_assert(lift::less_equal(3)(2), "less_equal is constexpr");
-static_assert(lift::greater_than(3)(4), "greater_than is constexpr");
+static_assert(gt<3>(4), "greater_than is constexpr");
 static_assert(lift::greater_equal(3)(4), "greater_equal is constexpr");
-static_assert(lift::negate(lift::equals(3))(2), "negate is constexpr");
-static_assert(lift::when_all(lift::equals(3),
-                             lift::not_equal(4))(3),
+static_assert(lift::negate(eq<3>)(2), "negate is constexpr");
+static_assert(lift::when_all(eq<3>, ne<4>)(3),
               "when_all is constexpr");
-static_assert(lift::when_any(lift::equals(3),
-                             lift::equals(4))(4),
+static_assert(lift::when_any(eq<3>, eq<4>)(4),
               "when_any is constexpr");
-static_assert(lift::when_none(lift::equals(3),
-                              lift::equals(4))(5),
+static_assert(lift::when_none(eq<3>,
+                              eq<4>)(5),
               "when_none is constexpr");
-static_assert(lift::if_then_else(lift::greater_than(3),
-                                 lift::equals(4),
-                                 lift::equals(5))(4),
+static_assert(lift::if_then_else(gt<3>,
+                                 eq<4>,
+                                 eq<5>)(4),
               "if_then_else is constexpr");
-static_assert(lift::compose(lift::greater_than(2),
+static_assert(lift::compose(gt<2>,
                             std::plus<>{})(1,2),
               "compose is constexpr");
 
@@ -57,8 +65,8 @@ TEST_CASE("compose")
   {
     THEN("they are moved")
     {
-      auto f1 = [x = std::make_unique<int>(3)](int p) mutable { *x += p; return std::move(x);};
-      auto f2 = [y = std::make_unique<std::string>("foo")](auto p) { return *y + std::to_string(*p);};
+      auto f1 = [x = std::make_unique<int>(3)](int p) { return *x + p;};
+      auto f2 = [y = std::make_unique<std::string>("foo")](auto p) { return *y + std::to_string(p);};
       auto func=lift::compose(std::move(f2), std::move(f1));
       REQUIRE(func(5) == "foo8");
     }
@@ -284,6 +292,14 @@ TEST_CASE("if_then")
                                   [](int x, int y) { return x + y;}),
                     [&](int x, int y) { num = x - y;})(4,-1);
       REQUIRE(num == 5);
+    }
+    AND_THEN("action can mutate its capture")
+    {
+      std::unique_ptr<int> m;
+      lift::if_then(lift::not_equal(3),
+      [x = std::make_unique<int>(0),&m](auto n) mutable { *x = n; m = std::move(x);})(4);
+      REQUIRE(m);
+      REQUIRE(*m == 4);
     }
   }
   AND_WHEN("predicate is false")
