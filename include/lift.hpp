@@ -83,8 +83,8 @@ template <typename T>
 inline
 constexpr
 auto
-equals(
-  T&& t)
+equal(
+  T &&t)
 {
   return [t = std::forward<T>(t)](const auto& obj) LIFT_THRICE(obj == t);
 }

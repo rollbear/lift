@@ -4,7 +4,7 @@
 // constexpr tests
 
 template <auto N>
-constexpr auto eq = lift::equals(N);
+constexpr auto eq = lift::equal(N);
 
 template <auto N>
 constexpr auto gt = lift::greater_than(N);
@@ -12,7 +12,7 @@ constexpr auto gt = lift::greater_than(N);
 template <auto N>
 constexpr auto ne = lift::not_equal(N);
 
-static_assert(eq<3>(3), "equals is constexpr");
+static_assert(eq<3>(3), "equal is constexpr");
 static_assert(ne<3>(1), "not_equal is constexpr");
 static_assert(lift::less_than(3)(2), "less_than is constexpr");
 static_assert(lift::less_equal(3)(2), "less_equal is constexpr");
@@ -80,11 +80,11 @@ TEST_CASE("negate logically inverts the return value of its function")
   REQUIRE_FALSE(lift::negate(is_three)(3));
 }
 
-TEST_CASE("equals")
+TEST_CASE("equal")
 {
   int* p = new int{3};
-  REQUIRE_FALSE(lift::equals(std::unique_ptr<int>(p))(std::unique_ptr<int>()));
-  REQUIRE(lift::equals(std::unique_ptr<int>())(nullptr));
+  REQUIRE_FALSE(lift::equal(std::unique_ptr<int>(p))(std::unique_ptr<int>()));
+  REQUIRE(lift::equal(std::unique_ptr<int>())(nullptr));
 }
 
 TEST_CASE("not_equal")
@@ -282,13 +282,13 @@ TEST_CASE("if_then")
     THEN("action is called with value")
     {
       int num = 0;
-      lift::if_then(lift::equals(3), [&](int i) { num = i;})(3);
+      lift::if_then(lift::equal(3), [&](int i) { num = i;})(3);
       REQUIRE(num == 3);
     }
     AND_THEN("multi parameter action is called with all values")
     {
       int num = 0;
-      lift::if_then(lift::compose(lift::equals(3),
+      lift::if_then(lift::compose(lift::equal(3),
                                   [](int x, int y) { return x + y;}),
                     [&](int x, int y) { num = x - y;})(4,-1);
       REQUIRE(num == 5);
@@ -307,7 +307,7 @@ TEST_CASE("if_then")
     THEN("action is not called")
     {
       int num = 0;
-      lift::if_then(lift::equals(3), [&](int i) { num = i;})(4);
+      lift::if_then(lift::equal(3), [&](int i) { num = i;})(4);
       REQUIRE(num == 0);
 
     }
@@ -318,7 +318,7 @@ TEST_CASE("if_then_else")
 {
   int tnum = 0;
   int fnum = 0;
-  auto condition_if_3 = lift::if_then_else(lift::equals(3),
+  auto condition_if_3 = lift::if_then_else(lift::equal(3),
                                            [&](int i) { tnum = i;},
                                            [&](int i) { fnum = i;});
   WHEN("predicate is true")
