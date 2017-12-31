@@ -103,22 +103,22 @@ compose(
   F&& f,
   Fs&&... fs)
 {
-  using namespace detail;
-  using tail_type = decltype(compose(std::forward<Fs>(fs)...));
-
   return [f = std::forward<F>(f), tail = compose(std::forward<Fs>(fs)...)]
     (auto&& ... objs)
-    noexcept(noexcept(detail::compose(typename std::is_invocable<tail_type, decltype(objs)...>::type{},
-                                      std::bool_constant<(std::is_invocable_v<tail_type, decltype(objs)>  && ...)>{},
+    noexcept(noexcept(detail::compose(typename std::is_invocable<decltype(compose(std::forward<Fs>(fs)...)), decltype(objs)...>::type{},
+                                      std::bool_constant<(std::is_invocable_v<decltype(compose(std::forward<Fs>(fs)...)), decltype(objs)>  && ...)>{},
                                       f,
                                       compose(std::forward<Fs>(fs)...),
                                       LIFT_FWD(objs)...)))
-    -> decltype(detail::compose(typename std::is_invocable<tail_type, decltype(objs)...>::type{},
-                                std::bool_constant<(std::is_invocable_v<tail_type, decltype(objs)> && ...)>{},
+    -> decltype(detail::compose(typename std::is_invocable<decltype(compose(std::forward<Fs>(fs)...)), decltype(objs)...>::type{},
+                                std::bool_constant<(std::is_invocable_v<decltype(compose(std::forward<Fs>(fs)...)), decltype(objs)> && ...)>{},
                                 f,
                                 compose(std::forward<Fs>(fs)...),
                                 LIFT_FWD(objs)...))
   {
+    using tail_type = decltype(compose(std::forward<Fs>(fs)...));
+    // gcc-7.2 ICEs if tail_type is visible in the surrounding scope
+
     constexpr auto unitail = typename std::is_invocable<tail_type, decltype(objs)...>::type{};
     constexpr auto multitail = (std::is_invocable_v<tail_type, decltype(objs)> && ...);
 
