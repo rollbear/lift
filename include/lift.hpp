@@ -75,7 +75,7 @@ namespace detail {
   -> decltype(f(tail(std::forward<T>(objs)...)))
   {
     return f(tail(std::forward<T>(objs)...));
-  };
+  }
 
   template <typename F, typename Tail, typename ... T>
   inline
@@ -91,7 +91,7 @@ namespace detail {
   -> decltype(f(tail(std::forward<T>(objs))...))
   {
     return f(tail(std::forward<T>(objs))...);
-  };
+  }
 }
 
 
