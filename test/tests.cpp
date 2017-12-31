@@ -47,6 +47,12 @@ static_assert(lift::compose(gt<2>,
                             std::plus<>{})(1,2),
               "compose is constexpr");
 
+template <typename T, typename = std::enable_if_t<std::is_same<T, bool>{}>>
+bool func(T);
+
+auto constexpr sumgt2 = lift::compose(gt<2>, std::negate<>{}, std::plus<>{});
+static_assert(std::is_invocable_r_v<bool, decltype(sumgt2), int, int>);
+static_assert(std::is_same<bool, decltype(func(sumgt2(1,2)))>{});
 TEST_CASE("compose")
 {
   auto to_string = [](auto t) { return std::to_string(t);};

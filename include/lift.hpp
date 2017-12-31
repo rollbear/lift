@@ -28,57 +28,102 @@
 
 namespace lift {
 
+template <typename F>
+inline
+constexpr
+auto
+compose(
+  F&& f
+)
+  noexcept
+-> F
+{
+  return std::forward<F>(f);
+}
+
+namespace detail {
+
+  template <typename P1, typename P2, typename F, typename Tail, typename ... T>
+  void compose(P1, P2, F&&, Tail&&, T&& ...)
+  {
+    constexpr auto unitail = std::is_invocable_v<Tail, T...>;
+    constexpr auto multitail = (std::is_invocable_v<Tail, T> && ...);
+    if constexpr (unitail)
+    {
+      using tail_type = std::invoke_result_t<Tail, T...>;
+      static_assert(std::is_invocable_v<F, tail_type>, "Function not callable with result of next function");
+    }
+    else if constexpr (multitail)
+    {
+      static_assert(std::is_invocable_v<F, std::invoke_result<Tail, T>...>, "Function not callable with results from multiple calls of unary function");
+    }
+    static_assert(unitail || multitail, "function not callable");
+    static_assert(sizeof...(T) == 1U || !(unitail && multitail), "ambigous composition");
+  }
+
+  template <typename P, typename F, typename Tail, typename ... T>
+  inline
+  constexpr
+  auto
+  compose(
+    std::true_type,
+    P,
+    F&& f,
+    Tail&& tail,
+    T&& ... objs)
+  noexcept(noexcept(f(tail(std::forward<T>(objs)...))))
+  -> decltype(f(tail(std::forward<T>(objs)...)))
+  {
+    return f(tail(std::forward<T>(objs)...));
+  };
+
+  template <typename F, typename Tail, typename ... T>
+  inline
+  constexpr
+  auto
+  compose(
+    std::false_type,
+    std::true_type,
+    F&& f,
+    Tail&& tail,
+    T&& ... objs)
+  noexcept(noexcept(f(tail(std::forward<T>(objs))...)))
+  -> decltype(f(tail(std::forward<T>(objs))...))
+  {
+    return f(tail(std::forward<T>(objs))...);
+  };
+}
+
+
 template <typename F, typename ... Fs>
 inline
 constexpr
-auto compose(
+auto
+compose(
   F&& f,
   Fs&&... fs)
 {
-  if constexpr (sizeof...(fs) == 0)
+  using namespace detail;
+  using tail_type = decltype(compose(std::forward<Fs>(fs)...));
+
+  return [f = std::forward<F>(f), tail = compose(std::forward<Fs>(fs)...)]
+    (auto&& ... objs)
+    noexcept(noexcept(detail::compose(typename std::is_invocable<tail_type, decltype(objs)...>::type{},
+                                      std::bool_constant<(std::is_invocable_v<tail_type, decltype(objs)>  && ...)>{},
+                                      f,
+                                      compose(std::forward<Fs>(fs)...),
+                                      LIFT_FWD(objs)...)))
+    -> decltype(detail::compose(typename std::is_invocable<tail_type, decltype(objs)...>::type{},
+                                std::bool_constant<(std::is_invocable_v<tail_type, decltype(objs)> && ...)>{},
+                                f,
+                                compose(std::forward<Fs>(fs)...),
+                                LIFT_FWD(objs)...))
   {
-    return std::forward<F>(f);
-  }
-  else
-  {
-    return [f = std::forward<F>(f), tail = compose(std::forward<Fs>(fs)...)]
-      (auto&& ... objs)
-    {
-      using tail_type = decltype(tail);
-      constexpr bool multitail = (std::is_invocable_v<tail_type, decltype(objs)>
-                                  && ...);
-      constexpr bool unitail = std::is_invocable_v<tail_type, decltype(objs)...>;
+    constexpr auto unitail = typename std::is_invocable<tail_type, decltype(objs)...>::type{};
+    constexpr auto multitail = (std::is_invocable_v<tail_type, decltype(objs)> && ...);
 
-      static_assert(sizeof...(objs) == 1 || !(multitail && unitail),
-                    "ambigous composition");
-
-      if constexpr (unitail)
-      {
-        using tail_rt = decltype(tail(LIFT_FWD(objs)...));
-        constexpr bool match = std::is_invocable_v<F, tail_rt>;
-        static_assert(match, "type mismatch, can't compose");
-        if constexpr (match)
-        {
-          return f(tail(LIFT_FWD(objs)...));
-        }
-      }
-      else if constexpr(multitail)
-      {
-        constexpr bool match =
-          std::is_invocable_v<F, decltype(tail(LIFT_FWD(objs)))...>;
-
-        static_assert(match, "type mismatch, can't compose");
-        if constexpr (match)
-        {
-          return f(tail(LIFT_FWD(objs))...);
-        }
-      }
-      else
-      {
-        static_assert(multitail || unitail, "arity mismatch, can't compose");
-      }
-    };
-  }
+    return detail::compose(unitail, std::bool_constant<multitail>{}, f, tail, LIFT_FWD(objs)...);
+  };
 }
 
 template <typename F>
