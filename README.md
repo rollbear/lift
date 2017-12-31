@@ -178,7 +178,12 @@ Composition in the other order, `lift::compose(f2, f1)` yields a binary
 function object which, when called with `value1` and `value2`, calls
 `f2(f1(value1, value2))`.
 
-No other compositions are possible.
+The depth can be increased, utilizing both forms of composition. If there
+is also a unary funcion `f3(int) -> int`, then
+`compose(f3, f1, f2)` yields a binary function, which when called with
+`value1` and `value2` calls `f3(f1(f2(value1), f2(value2)))`.
+
+It is not possible to compose several N-ary functions (where N > 1.)
 
 None of the `functions` may mutate their state when called.
 
