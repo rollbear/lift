@@ -118,6 +118,7 @@ compose(
   {
     using tail_type = decltype(compose(std::forward<Fs>(fs)...));
     // gcc-7.2 ICEs if tail_type is visible in the surrounding scope
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83644
 
     constexpr auto unitail = typename std::is_invocable<tail_type, decltype(objs)...>::type{};
     constexpr auto multitail = (std::is_invocable_v<tail_type, decltype(objs)> && ...);
