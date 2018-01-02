@@ -369,7 +369,7 @@ do_all(
     [funcs = std::tuple(std::forward<Fs>(fs)...)]
       (const auto& ... obj)
       mutable
-      noexcept(noexcept(((void)(LIFT_FWD(obj)), ...)))
+      noexcept((noexcept(fs(LIFT_FWD(obj)...)) && ...))
   -> void
   {
     detail::do_all(
