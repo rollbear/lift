@@ -29,6 +29,10 @@ auto i = std::find_if(staff.begin(), staff.end(),
 if (i != staff.end()) staff.erase(i);
 ```
 
+[YouTube Video](https://www.youtube.com/watch?v=r1N3PElFDeI) showing the ideas,
+recorded at [SwedenC++](https://www.meetup.com/swedencpp) Stockholm meetup in
+January 2018.
+
 ## Higher order functions
 
 * [`equal`](#equal)
