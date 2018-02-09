@@ -44,7 +44,8 @@ compose(
 namespace detail {
 
   template <typename P1, typename P2, typename F, typename Tail, typename ... T>
-  void compose(P1, P2, F&&, Tail&&, T&& ...)
+  void
+  compose(P1, P2, F&&, Tail&&, T&& ...)
   {
     constexpr auto unitail = std::is_invocable_v<Tail, T...>;
     constexpr auto multitail = (std::is_invocable_v<Tail, T> && ...);
