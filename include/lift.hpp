@@ -354,9 +354,9 @@ namespace detail
   do_all(
     Fs& fs,
     std::index_sequence<I...>,
-    T&& ... t)
+    const T& ... t)
   {
-    ((void)(std::get<I>(fs)(std::forward<T>(t)...)),  ...);
+    ((void)(std::get<I>(fs)(t...)),  ...);
   }
 }
 
@@ -366,19 +366,19 @@ inline
 constexpr
 auto
 do_all(
-  Fs ... fs)
+  Fs&& ... fs)
 {
   return
     [funcs = std::tuple(std::forward<Fs>(fs)...)]
       (const auto& ... obj)
       mutable
-      noexcept((noexcept(fs(LIFT_FWD(obj)...)) && ...))
+      noexcept((noexcept(fs(obj...)) && ...))
   -> void
   {
     detail::do_all(
       funcs,
       std::index_sequence_for<Fs...>{},
-      LIFT_FWD(obj)...
+      obj...
     );
   };
 }
