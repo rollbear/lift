@@ -52,11 +52,13 @@ namespace detail {
     if constexpr (unitail)
     {
       using tail_type = std::invoke_result_t<Tail, T...>;
-      static_assert(std::is_invocable_v<F, tail_type>, "Function not callable with result of next function");
+      static_assert(std::is_invocable_v<F, tail_type>,
+                    "Function not callable with result of next function");
     }
     else if constexpr (multitail)
     {
-      static_assert(std::is_invocable_v<F, std::invoke_result<Tail, T>...>, "Function not callable with results from multiple calls of unary function");
+      static_assert(std::is_invocable_v<F, std::invoke_result<Tail, T>...>,
+                    "Function not callable with results from multiple calls of unary function");
     }
     static_assert(unitail || multitail, "function not callable");
     static_assert(sizeof...(T) == 1U || !(unitail && multitail), "ambigous composition");
@@ -250,6 +252,7 @@ namespace detail
     return (std::get<I>(fs)(std::forward<T>(t)...) || ...);
   }
 }
+
 template <typename ... Fs>
 inline
 constexpr
