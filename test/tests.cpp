@@ -57,35 +57,35 @@ TEST_CASE("compose")
 {
   auto to_string = [](auto t) { return std::to_string(t);};
   WHEN("called with several unary functions") {
+    auto twice = [](int i) { return i + i; };
+    auto add_one = [](int i) { return i + 1; };
+    auto string_plus_one_twice = lift::compose(to_string, twice, add_one);
     THEN("they are chained last to first") {
-      auto string_plus_one_twice = lift::compose(to_string,
-                                                 [](int i) { return i + i; },
-                                                 [](int i) { return i + 1; });
       REQUIRE(string_plus_one_twice(2) == "6");
     }
   }
   AND_WHEN("called with a unary and a binary function") {
+    auto add = [](int x, int y) { return x + y; };
+    auto string_add = lift::compose(to_string, add);
     THEN("the composition is binary, calling the last with two values and the first with the result") {
-      auto string_add = lift::compose(to_string,
-                                      [](int x, int y) { return x + y; });
       REQUIRE(string_add(3, 2) == "5");
     }
   }
   AND_WHEN("called with a binary and a unary function")
   {
+    auto pick_first = [](const auto& x) { return x.first;};
+    auto cmp = lift::compose(std::less<>{}, pick_first);
     THEN("the composition is binary, calling the last with each value, and the first with the two results")
     {
-      auto cmp = lift::compose(std::less<>{},
-                               [](const auto& x) { return x.first;});
       REQUIRE(cmp(std::pair(1,3), std::pair(3,1)));
     }
   }
   AND_WHEN("functions are non-copyable")
   {
+    auto f1 = [x = std::make_unique<int>(3)](int p) { return *x + p;};
+    auto f2 = [y = std::make_unique<std::string>("foo")](auto p) { return *y + std::to_string(p);};
     THEN("they are moved")
     {
-      auto f1 = [x = std::make_unique<int>(3)](int p) { return *x + p;};
-      auto f2 = [y = std::make_unique<std::string>("foo")](auto p) { return *y + std::to_string(p);};
       auto func=lift::compose(std::move(f2), std::move(f1));
       REQUIRE(func(5) == "foo8");
     }
@@ -184,9 +184,9 @@ TEST_CASE("when_all")
   }
   AND_WHEN("a predicate is not copyable")
   {
+    auto pred = lift::when_all([x = std::make_unique<int>(3)](auto& p) { return p == x;});
     THEN("it is moved")
     {
-      auto pred = lift::when_all([x = std::make_unique<int>(3)](auto& p) { return p == x;});
       REQUIRE_FALSE(pred(nullptr));
     }
   }
@@ -235,9 +235,9 @@ TEST_CASE("when_any")
   }
   AND_WHEN("a predicate is not copyable")
   {
+    auto pred = lift::when_any([x = std::make_unique<int>(3)](auto& p) { return p == x;});
     THEN("it is moved")
     {
-      auto pred = lift::when_any([x = std::make_unique<int>(3)](auto& p) { return p == x;});
       REQUIRE_FALSE(pred(nullptr));
     }
   }
