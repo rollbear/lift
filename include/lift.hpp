@@ -210,10 +210,10 @@ namespace detail
   when_all(
     Fs& fs,
     std::index_sequence <I...>,
-    T&& ... t)
-  noexcept(noexcept((std::get<I>(fs)(std::forward<T>(t)...) && ...)))
+    const T& ... t)
+  noexcept(noexcept((std::get<I>(fs)(t...) && ...)))
   {
-    return (std::get<I>(fs)(std::forward<T>(t)...) && ...);
+    return (std::get<I>(fs)(t...) && ...);
   }
 }
 
@@ -232,7 +232,8 @@ when_all(
   {
     return detail::when_all(
       funcs,
-      std::index_sequence_for<Fs...>{}, LIFT_FWD(obj)...
+      std::index_sequence_for<Fs...>{},
+      obj...
     );
   };
 }
