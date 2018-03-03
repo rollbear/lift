@@ -280,9 +280,9 @@ inline
 constexpr
 auto
 when_none(
-  Fs ... fs)
+  Fs&& ... fs)
 {
-  return negate(when_any(std::move(fs)...));
+  return negate(when_any(std::forward<Fs>(fs)...));
 }
 
 template <typename Predicate, typename Action>
