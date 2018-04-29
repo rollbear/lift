@@ -5,7 +5,18 @@ and for making functional composition easier. These help reduce code
 duplication and improve clarity, for example in code using STL
 `<algorithm>`.
 
-### Example:
+*lift* uses advanced C++17 features not supported by all compilers.
+On 2018-04-29, it is known to work with:
+* clang++-5, clang++-6
+* gcc-7
+
+Notably, it has been shown not to work with:
+* any version of MSVC
+* gcc-trunk (9.0.0 20180428 ) ICEs
+* clang++-trunk (trunk 331105) (llvm/trunk 331103) ICEs
+
+
+### Example of use:
 
 ```Cpp
 struct Employee {
