@@ -13,6 +13,7 @@ On 2018-04-29, it is known to work with:
 Notably, it has been shown not to work with:
 * any version of MSVC
 * gcc-trunk (9.0.0 20180428 ) ICEs
+* gcc-8 prebuild (svn 259748) [Bug 85569](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85569)
 * clang++-trunk (trunk 331105) (llvm/trunk 331103) ICEs
 
 
