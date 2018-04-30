@@ -14,7 +14,7 @@ Notably, it has been shown not to work with:
 * any version of MSVC
 * gcc-trunk (9.0.0 20180428 ) ICEs
 * gcc-8 prebuild (svn 259748) [Bug 85569](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85569)
-* clang++-trunk (trunk 331105) (llvm/trunk 331103) ICEs
+* clang++-7 trunk (trunk 331144) (llvm/trunk 331161) [Bug 37290](https://bugs.llvm.org/show_bug.cgi?id=37290)
 
 
 ### Example of use:
