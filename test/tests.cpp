@@ -408,3 +408,21 @@ TEST_CASE("do_all")
   }
 }
 
+template <typename T>
+std::string to_string(const T& t)
+{
+  std::ostringstream os;
+  os << t;
+  return os.str();
+}
+
+auto equal_to_string(std::string s)
+{
+  return lift::compose(lift::equal(std::move(s)), LIFT(::to_string));
+}
+
+TEST_CASE("LIFT macro")
+{
+  REQUIRE(equal_to_string("3")(3));
+  REQUIRE(equal_to_string("3")("3"));
+}

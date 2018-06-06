@@ -26,6 +26,11 @@
 
 #define LIFT_FWD(x) std::forward<decltype(x)>(x)
 
+#define LIFT_FUNCTION(lift_func) [](auto&& ... p) LIFT_THRICE(lift_func(LIFT_FWD(p)...))
+#ifndef LIFT
+#define LIFT LIFT_FUNCTION
+#endif
+
 namespace lift {
 
 template <typename F>
@@ -386,4 +391,5 @@ do_all(
 }
 
 }
+
 #endif //HIGHER_ORDER_FUNCTIONS_LIFT_HPP

@@ -62,6 +62,10 @@ January 2018.
 * [`if_then_else`](#if_then_else)
 * [`do_all`](#do_all)
 
+## Macros
+
+* [`LIFT_FUNCTION`, `LIFT`](#LIFT_FUNCTION)
+
 ### <A name="equal"/>`lift::equal(value)`
 
 Returns a predicate that compares its argument for equality with `value`.
@@ -366,4 +370,21 @@ auto print_dots = [](auto& stream, size_t width) {
 std::vector<std::string> v;
 ...
 std::for_each(std::begin(v), std::end(v),print_dots(std::cout, 20));
+```
+
+### <A name="LIFT_FUNCTION"/>`LIFT_FUNCTION(function)`
+
+Lifts overloaded functions named `function` to one callable that can
+be used with other higher order functions. A short form `LIFT(function)`
+is also available.
+
+#### Example
+
+```Cpp
+std::vector<int> vi;
+...
+std::vector<std::string> vs;
+std::transform(std::begin(vi), std::end(vi),
+               std::back_inserter(vs),
+               LIFT(std::to_string)); // lift overloaded set of 9 functions
 ```
