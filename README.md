@@ -356,7 +356,7 @@ All `actions` must be callable with the same parameters. The function
 object is templated and can be called with any types that all `actions`
 can be called with.
 
-´actions` may mutate their state when called.
+`actions` may mutate their state when called.
 
 The returned function does not return anything when called.
 
