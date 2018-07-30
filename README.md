@@ -41,9 +41,12 @@ auto i = std::find_if(staff.begin(), staff.end(),
 if (i != staff.end()) staff.erase(i);
 ```
 
-[YouTube Video](https://www.youtube.com/watch?v=r1N3PElFDeI) showing the ideas,
-recorded at [SwedenC++](https://www.meetup.com/swedencpp) Stockholm meetup in
-January 2018.
+## Videos
+* Intro to the ideas, recorded at [SwedenC++](https://www.meetup.com/swedencpp) Stockholm meetup in
+January 2018. [YouTube (30m)](https://www.youtube.com/watch?v=r1N3PElFDeI) 
+* Conference talk - *"Higher Order Functions for Ordinary C++ Developers"*, recorded at
+[NDC{Oslo}](https://ndcoslo.com/talk/higher-order-functions-for-ordinary-c-developers/)
+ June 2018. [YouTube (1h)](https://www.youtube.com/watch?v=kcBlSmo3Xlk)
 
 ## Higher order functions
 
