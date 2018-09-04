@@ -179,8 +179,8 @@ can be called with all types that `in_predicate` can be called with.
 ```Cpp
 constexpr auto unary_not_3 = lift::negate(lift::equal(3));
 static_assert(unary_not_3(5));
-constexpr auto binary_gt = lift::negate(std::less<>{});
-static_assert(binary_gt(4,3);
+constexpr auto binary_ge = lift::negate(std::less<>{});
+static_assert(binary_ge(4,3));
 ```
 
 ### <A name="compose"/>`lift::compose(functions...)`
