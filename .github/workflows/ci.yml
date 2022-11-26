@@ -1,0 +1,106 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-20.04
+    container: "ghcr.io/rollbear/${{matrix.config.container}}"
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { cxx: clang++-15, std: 17, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:15" }
+          - { cxx: clang++-15, std: 20, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:15" }
+          - { cxx: clang++-15, std: 17, container: "clang:15" }
+          - { cxx: clang++-15, std: 20, container: "clang:15" }
+          - { cxx: clang++-14, std: 17, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:14" }
+          - { cxx: clang++-14, std: 20, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:14" }
+          - { cxx: clang++-14, std: 17, container: "clang:14" }
+          - { cxx: clang++-14, std: 20, container: "clang:14" }
+          - { cxx: clang++-13, std: 17, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:13" }
+          - { cxx: clang++-13, std: 20, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:13" }
+          - { cxx: clang++-13, std: 17, container: "clang:13" }
+          - { cxx: clang++-13, std: 20, container: "clang:13" }
+          - { cxx: clang++-12, std: 17, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:12" }
+          - { cxx: clang++-12, std: 20, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:12" }
+          - { cxx: clang++-12, std: 17, container: "clang:12" }
+          - { cxx: clang++-12, std: 20, container: "clang:12" }
+          - { cxx: clang++-11, std: 17, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:11" }
+          - { cxx: clang++-11, std: 20, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:11" }
+          - { cxx: clang++-11, std: 17, container: "clang:11" }
+          - { cxx: clang++-11, std: 20, container: "clang:11" }
+          - { cxx: clang++-10, std: 17, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:10" }
+          - { cxx: clang++-10, std: 20, stdlib: "libc++", linker: "-fuse-ld=gold -lc++abi", container: "clang:10" }
+          - { cxx: clang++-10, std: 17, container: "clang:10" }
+          - { cxx: clang++-10, std: 20, container: "clang:10" }
+          - { cxx: clang++-9, std: 17, container: "clang:9" }
+          - { cxx: clang++-8, std: 17, container: "clang:8" }
+          - { cxx: clang++-7, std: 17, container: "clang:7" }
+          - { cxx: clang++-6.0, std: 17, container: "clang:6.0" }
+          - { cxx: clang++-5.0, std: 17, container: "clang:5.0" }
+          - { cxx: g++-12, std: 17, container: "gcc:12" }
+          - { cxx: g++-12, std: 20, container: "gcc:12" }
+          - { cxx: g++-11, std: 17, container: "gcc:11" }
+          - { cxx: g++-11, std: 20, container: "gcc:11" }
+          - { cxx: g++-10, std: 17, container: "gcc:10" }
+          - { cxx: g++-10, std: 20, container: "gcc:10" }
+          - { cxx: g++-9, std: 17, container: "gcc:9" }
+          - { cxx: g++-8, std: 17, container: "gcc:8" }
+          - { cxx: g++-7, std: 17, container: "gcc:7" }
+
+    name: "Linux ${{matrix.config.cxx}} C++${{matrix.config.std}} ${{matrix.config.stdlib}}"
+    steps:
+      - uses: actions/checkout@v3
+
+
+      - name: "setup"
+        shell: bash
+        run: |
+          STDLIB=""
+          if [ -n "${{matrix.config.stdlib}}" ]
+          then
+            STDLIB="-stdlib=libc++"
+          fi
+          LIBRARY_SUFFIX="c++${{matrix.config.std}}${{matrix.config.stdlib}}"
+          cmake \
+            -S . \
+            -B build \
+            -DCMAKE_CXX_COMPILER=${{matrix.config.cxx}} \
+            -DCMAKE_CXX_STANDARD=${{matrix.config.std}} \
+            -DCMAKE_CXX_FLAGS="${STDLIB} -Wall -Wextra -Wconversion -pedantic -Werror" \
+            -DCATCH2_PREFIX="/usr/local/catch2-3-${LIBRARY_SUFFIX}" \
+            -DCMAKE_BUILD_TYPE=Debug
+      - name: "build"
+        run: |
+          cmake --build build -t self_test
+
+      - name: "test"
+        run: |
+          ./build/test/self_test
+
+  build_windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { std: 17 }
+          - { std: 20 }
+    name: "Windows C++${{matrix.config.std}}"
+    steps:
+      - uses: actions/checkout@v3
+      - name: "setup"
+        shell: bash
+        run: |
+          cmake \
+            -S . \
+            -B build \
+            -DCMAKE_CXX_STANDARD=${{matrix.config.std}} \
+            -DCMAKE_BUILD_TYPE=Debug
+      - name: "build"
+        run: |
+          cmake --build build --target self_test
+      - name: "test"
+        run: |
+          build\Debug\test\self_test.exe

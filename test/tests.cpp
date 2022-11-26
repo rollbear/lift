@@ -12,8 +12,13 @@
  */
 
 #include <lift.hpp>
-#include <catch.hpp>
-
+#ifdef CATCH2_PREBUILT
+#include <catch2/catch_test_macros.hpp>
+#else
+#include <catch2/catch.hpp>
+#endif
+#include <sstream>
+#include <memory>
 // constexpr tests
 
 template <auto N>
