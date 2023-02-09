@@ -17,16 +17,17 @@
 #include <utility>
 #include <tuple>
 
-#define LIFT_THRICE(...)                \
-        noexcept(noexcept(__VA_ARGS__)) \
-        -> decltype(__VA_ARGS__)        \
-        {                               \
-          return __VA_ARGS__;           \
-        }
+#define LIFT_FUNCTION(f)                                                  \
+    LIFT_ba7b8453f262e429575e23dcb2192b33(                                \
+        a_ba7b8453f262e429575e23dcb2192b33,                               \
+        (f)(::std::forward<decltype(a_ba7b8453f262e429575e23dcb2192b33)>( \
+            a_ba7b8453f262e429575e23dcb2192b33)...))
 
-#define LIFT_FWD(x) std::forward<decltype(x)>(x)
+#define LIFT_ba7b8453f262e429575e23dcb2192b33(a, f_of_a)              \
+    [&](auto&&... a) noexcept(noexcept(f_of_a)) -> decltype(f_of_a) { \
+        return f_of_a;                                                \
+    }
 
-#define LIFT_FUNCTION(lift_func) [](auto&& ... p) LIFT_THRICE(lift_func(LIFT_FWD(p)...))
 #ifndef LIFT
 #define LIFT LIFT_FUNCTION
 #endif
