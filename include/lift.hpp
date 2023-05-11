@@ -28,6 +28,13 @@
         return f_of_a;                                                \
     }
 
+#define LIFT_THRICE(...)                                 \
+  noexcept(noexcept(__VA_ARGS__))->decltype(__VA_ARGS__) \
+  {                                                      \
+    return __VA_ARGS__;                                  \
+  }
+
+#define LIFT_FWD(x) std::forward<decltype(x)>(x)
 #ifndef LIFT
 #define LIFT LIFT_FUNCTION
 #endif
